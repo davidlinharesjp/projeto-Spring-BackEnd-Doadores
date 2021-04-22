@@ -6,8 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import com.davidlinhares.medicalcheck.entity.Donor;
-import com.davidlinhares.medicalcheck.entity.enumeration.SexEnum;
-import com.davidlinhares.medicalcheck.entity.enumeration.StateEnum;
 import com.davidlinhares.medicalcheck.repository.DonorRepository;
 
 @Configuration
@@ -20,14 +18,12 @@ public class TestConfig implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 
-		/*
-		 * Donor dono = new Donor("nome", "cpg", "rg", "mae", "pai", "email", "cep",
-		 * "endereco", 0123l, "bairro", "cidade", "121+41", "2151", 1.2, "a+",
-		 * SexEnum.FEMALE, StateEnum.ACRE);
-		 * 
-		 * 
-		 * donorRepository.save(dono);
-		 */
+		
+		  Donor dono = new Donor();
+		  
+		  
+		  donorRepository.save(dono);
+		 
 	}
 
 }
