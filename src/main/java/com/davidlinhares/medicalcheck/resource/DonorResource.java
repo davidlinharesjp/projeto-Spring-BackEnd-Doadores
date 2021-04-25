@@ -5,8 +5,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.davidlinhares.medicalcheck.entity.Donor;
 import com.davidlinhares.medicalcheck.entity.dto.ResponseDTO;
 import com.davidlinhares.medicalcheck.service.DonorService;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -32,17 +36,19 @@ public class DonorResource {
 	public ResponseEntity<ResponseDTO> insertJson(@RequestBody String json) throws IOException {
 
 		ObjectMapper mapper = new ObjectMapper();
-
-//		  LocalDate df = new SimpleDateFormat("yyyy-MM-dd");
-		// DateTimeFormatter formatters = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
 		DateFormat date = new SimpleDateFormat("dd/MM/yyyy");
 		mapper.registerModule(new JavaTimeModule());
 		mapper.configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
 		mapper.setDateFormat(date);
-
-		List<Donor> donorsList = mapper.readValue(json, new TypeReference<List<Donor>>() {
-		});
+		List<Donor> donorsList = null;
+		try {
+			donorsList = mapper.readValue(json, new TypeReference<List<Donor>>() {
+			});
+		} catch (JsonParseException e) {
+			throw new JsonParseException(e.getProcessor(), "Formato Json Invalido:   ", e.getLocation());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		ResponseDTO dto = donorService.insertJson(donorsList);
 		return ResponseEntity.ok().body(dto);
@@ -55,8 +61,10 @@ public class DonorResource {
 	}
 
 	@PostMapping(value = "/insert")
-	public ResponseEntity<ResponseDTO> insertDonor(@RequestBody Donor donor) {
-		ResponseDTO dto = donorService.insert(donor);
+	public ResponseEntity<ResponseDTO> insertDonor(@Valid @RequestBody Donor donor) throws MethodArgumentNotValidException {
+		ResponseDTO dto = new ResponseDTO();
+		dto = donorService.insert(donor);
+		
 		return ResponseEntity.ok().body(dto);
 	}
 

@@ -16,6 +16,11 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.br.CPF;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,6 +40,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @JsonDeserialize
 @EqualsAndHashCode
+@Valid
 public class Donor implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -44,12 +50,13 @@ public class Donor implements Serializable {
 	@Column(nullable = false, updatable = false, unique = true)
 	@Getter
 	private UUID id;
-	@Getter()
+	@Getter
 	@Setter
 	private String nome;
 	@Getter
 	@Setter
 	@Column(unique = true)
+	@CPF(message = "Cpf Invalido")
 	private String cpf;
 	@Getter
 	@Setter
@@ -68,6 +75,7 @@ public class Donor implements Serializable {
 	private String pai;
 	@Getter
 	@Setter
+	@Email(message = "Email Invalido")
 	private String email;
 	@Getter
 	@Setter
@@ -92,18 +100,23 @@ public class Donor implements Serializable {
 	private String celular;
 	@Getter
 	@Setter
+	@NotNull(message = "Altura não pode estar em branco")
 	private Double altura;
 	@Getter
 	@Setter
+	@NotNull(message = "Peso esta em brando")
 	private Double peso;
 	@Getter
 	@Setter
+	@NotNull(message = "Tipo senguineo esta em branco")
 	private String tipo_sanguineo;
 	@Getter
 	@Setter
+	@NotNull(message = "Sexo não pode estar em Branco")
 	private String sexo;
 	@Getter
 	@Setter
+	@NotNull(message = "Estado residente se encontra em branco")
 	private String estado;
 	@Column(insertable = true, updatable = true)
 	@Temporal(value = TemporalType.TIMESTAMP)

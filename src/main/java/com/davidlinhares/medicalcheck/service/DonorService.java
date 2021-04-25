@@ -4,10 +4,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.davidlinhares.medicalcheck.entity.Donor;
@@ -15,7 +17,11 @@ import com.davidlinhares.medicalcheck.entity.dto.DetailsDonorsDTO;
 import com.davidlinhares.medicalcheck.entity.dto.ResponseDTO;
 import com.davidlinhares.medicalcheck.entity.enumeration.SexEnum;
 import com.davidlinhares.medicalcheck.repository.DonorRepository;
+import com.davidlinhares.medicalcheck.service.exception.IntegrationViolationDataBaseException;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class DonorService {
 
@@ -24,27 +30,35 @@ public class DonorService {
 			"PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO", "DF" };
 	private static final String[] GROUPSBYAGES = { "0a10", "11a20", "21a30", "31a40", "41a50", "51a60", "61a69" };
 
-	/*
-	 * private static final Map<String, String[]> TYPERECIPIENTBLOODS = new
-	 * HashMap<String, String[]>() { private static final long serialVersionUID =
-	 * 1L; { put("A+", new String[] { "A+", "A-", "O+", "O-" }); put("A-", new
-	 * String[] { "A-", "0-" }); put("B+", new String[] { "B+", "B-", "O+", "O-" });
-	 * put("B-", new String[] { "B-", "O-" }); put("AB+", new String[] { "A+", "B+",
-	 * "O+", "AB+", "A-", "B-", "O-", "AB-" }); put("AB-", new String[] { "A-",
-	 * "B-", "0-", "AB-" }); put("O+", new String[] { "0+", "0-" }); put("O-", new
-	 * String[] { "0-" }); } };
-	 */
 
 	@Autowired
 	DonorRepository repository;
+	
+	List<String> erros = new ArrayList<>();
 
 	public ResponseDTO insertJson(List<Donor> donors) {
 		ResponseDTO responseDTO = new ResponseDTO();
+		List<Donor> newDonors = new ArrayList<>();
 		if (!donors.isEmpty()) {
 			try {
-				repository.saveAll(donors);
-			} catch (Exception e) {
+				for(Donor donor: donors) {
+					if(donor != null && donor.getCpf() != null && donor.getAltura() != null && 
+							donor.getData_nasc() != null && donor.getPeso() != null && donor.getTipo_sanguineo() != null && donor.getEstado() != null) {						
+					Optional<Donor>  op = repository.findByCpf(donor.getCpf());
+					if(op.isPresent()) {
+						erros.add("Doado já cadastrado: " + donor.getNome() +" - CPF: "+ donor.getCpf());
+					}
+					newDonors.add(donor);
+					}
+				}
+				if(!newDonors.isEmpty()) {
+					throw new IntegrationViolationDataBaseException("Error ao inserir - " + newDonors.size() +" registros no Banco", erros!= null ? erros: new ArrayList<>() );
+				}
+				repository.saveAll(donors);					
+			} catch (DataIntegrityViolationException e) {	
 				e.printStackTrace();
+				log.error(e.getMessage());
+				throw new IntegrationViolationDataBaseException("Error ao inserir no Banco", erros!= null ? erros: new ArrayList<>() );
 			}
 			responseDTO = convertDonorsDTO(donors);
 		}
