@@ -41,4 +41,12 @@ public class ResourceExceptionHandler {
 				request.getRequestURI(), e.getErros() );
 		return ResponseEntity.status(status).body(err);
 	}
+	@ExceptionHandler(IlegalFormatFile.class)
+	public ResponseEntity<StandardError> integrationDataBase(IlegalFormatFile e, HttpServletRequest request) {
+		String error = "Formato do arquivo não permitido:" + e.getMessage();
+		HttpStatus status = HttpStatus.METHOD_NOT_ALLOWED;
+		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(),
+				request.getRequestURI(), null );
+		return ResponseEntity.status(status).body(err);
+	}
 }

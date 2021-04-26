@@ -17,7 +17,6 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.br.CPF;
@@ -75,7 +74,6 @@ public class Donor implements Serializable {
 	private String pai;
 	@Getter
 	@Setter
-	@Email(message = "Email Invalido")
 	private String email;
 	@Getter
 	@Setter

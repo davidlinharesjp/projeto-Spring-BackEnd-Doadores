@@ -30,10 +30,9 @@ public class DonorService {
 			"PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO", "DF" };
 	private static final String[] GROUPSBYAGES = { "0a10", "11a20", "21a30", "31a40", "41a50", "51a60", "61a69" };
 
-
 	@Autowired
 	DonorRepository repository;
-	
+
 	List<String> erros = new ArrayList<>();
 
 	public ResponseDTO insertJson(List<Donor> donors) {
@@ -41,24 +40,28 @@ public class DonorService {
 		List<Donor> newDonors = new ArrayList<>();
 		if (!donors.isEmpty()) {
 			try {
-				for(Donor donor: donors) {
-					if(donor != null && donor.getCpf() != null && donor.getAltura() != null && 
-							donor.getData_nasc() != null && donor.getPeso() != null && donor.getTipo_sanguineo() != null && donor.getEstado() != null) {						
-					Optional<Donor>  op = repository.findByCpf(donor.getCpf());
-					if(op.isPresent()) {
-						erros.add("Doado já cadastrado: " + donor.getNome() +" - CPF: "+ donor.getCpf());
-					}
-					newDonors.add(donor);
+				for (Donor donor : donors) {
+					if (donor != null && donor.getCpf() != null && donor.getAltura() != null
+							&& donor.getData_nasc() != null && donor.getPeso() != null
+							&& donor.getTipo_sanguineo() != null && donor.getEstado() != null) {
+						Optional<Donor> op = repository.findByCpf(donor.getCpf());
+						if (op.isPresent()) {
+							erros.add("Doado já cadastrado: " + donor.getNome() + " - CPF: " + donor.getCpf());
+							newDonors.add(donor);
+						}
 					}
 				}
-				if(!newDonors.isEmpty()) {
-					throw new IntegrationViolationDataBaseException("Error ao inserir - " + newDonors.size() +" registros no Banco", erros!= null ? erros: new ArrayList<>() );
+				if (!newDonors.isEmpty()) {
+					throw new IntegrationViolationDataBaseException(
+							"Error ao inserir - " + newDonors.size() + " registros no Banco",
+							erros != null ? erros : new ArrayList<>());
 				}
-				repository.saveAll(donors);					
-			} catch (DataIntegrityViolationException e) {	
+				repository.saveAll(donors);
+			} catch (DataIntegrityViolationException e) {
 				e.printStackTrace();
 				log.error(e.getMessage());
-				throw new IntegrationViolationDataBaseException("Error ao inserir no Banco", erros!= null ? erros: new ArrayList<>() );
+				throw new IntegrationViolationDataBaseException("Error ao inserir no Banco",
+						erros != null ? erros : new ArrayList<>());
 			}
 			responseDTO = convertDonorsDTO(donors);
 		}
